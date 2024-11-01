@@ -125,9 +125,9 @@ def main():
                 save_multiple_files(multiple_file)
                 st.success("Done")
         
-        if st.button("Delete Uploaded Data"):
+        if st.button("Delete Uploaded Data", type="primary"):
             if os.listdir("files_container"):
-                delete_folder("files_container", type="primary")
+                delete_folder("files_container")
             else:
                 st.write("Folder is Empty")
             
