@@ -124,6 +124,9 @@ def main():
             with st.spinner("Processing..."):
                 save_multiple_files(multiple_file)
                 st.success("Done")
+        
+        if st.button("Delete data"):
+            delete_folder("files_container")
 
 
 
