@@ -98,7 +98,7 @@ def compair_multiple_code():
 
 def main():
     st.set_page_config(page_title="Comparison Checker", page_icon=":bar_chart:", layout="wide")
-    st.header("Plagiarism Cheker for Multiple Files")
+    st.header("Comparison between two file")
 
     if os.listdir("files_container") == []:
         st.write("Folder is Empty, First upload the Data...")
