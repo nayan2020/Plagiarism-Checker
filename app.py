@@ -5,23 +5,58 @@ from io import StringIO
 import pandas as pd
 import plotly.express as px
 import os
+import glob
 
-tab_divider_flag = False
 file_names = None
 file_contents = None
-import shutil
+directory="files_container" # default file
+ 
 
-def delete_folder(folder_path):
+
+# ********************************************************
+#   Function: delete_folder
+# 
+#   Remove every element from folder
+# 
+#   Input:
+#       folder_path       : input file path
+#
+#   Output:
+#       None
+#
+# ********************************************************
+
+def delete_folder(
+        directory,
+        file_type = '*'
+        ):
     try:
-        shutil.rmtree(folder_path)
+        files = glob.glob(os.path.join(directory, file_type))
+        for file in files:
+            os.remove(file)
     except FileNotFoundError:
-        st.write(f"Folder '{folder_path}' not found.")
+        st.write(f"Folder '{directory}' not found.")
     except OSError as e:
-        st.write(f"Error deleting folder '{folder_path}': {e}")
+        st.write(f"Error deleting folder '{directory}': {e}")
 
-
-
-def save_multiple_files(uploaded_files, directory="files_container"):
+# ********************************************************
+#   function: save_multiple_files
+# 
+#   Store the uploded file in local
+# 
+#   Input:
+#       uploaded_files      : multiple files
+#       directory           : files stored location              
+#
+#   Output:
+#       None
+#
+# ********************************************************
+def save_multiple_files(
+        uploaded_files,
+    ):
+    
+    global directory
     delete_folder(directory)
     os.makedirs(directory, exist_ok=True)
     for uploaded_file in uploaded_files:
@@ -32,25 +67,33 @@ def save_multiple_files(uploaded_files, directory="files_container"):
 
         # To read file as string:
         string_data = stringio.read()
-        # st.write("filename:", uploaded_file.name)
-        #st.write(string_data)
 
         with open(filepath, 'w') as f:
             f.write(string_data)
 
-    
+# ********************************************************
+#   function: user_input
+# 
+#   Remove every element from folder
+# 
+#   Input:
+#       None              
+#
+#   Output:
+#       populate Heat Map and line graph
+#
+# ********************************************************
+def calculation_input_and_populate_output():
+    global directory
+    # *********** Load and read the content of each  file ***********
 
-
-
-def user_input():
-    # Load and read the content of each  file
-    extracted_files = os.listdir("files_container")
+    extracted_files = os.listdir(directory)
     extracted_files.sort()
     
     global file_contents
     file_contents = {}
     for file_name in extracted_files:
-        file_path = os.path.join("files_container", file_name)
+        file_path = os.path.join(directory, file_name)
         with open(file_path, 'r', encoding='utf-8') as f:
             file_contents[file_name] = f.read()
     
@@ -60,15 +103,21 @@ def user_input():
     file_names = list(file_contents.keys())
     file_texts = list(file_contents.values())
 
+    # ******************* Calculate Part *******************
+
     # Calculate pairwise cosine similarity on the file contents using TF-IDF
     vectorizer = TfidfVectorizer()
     tfidf_matrix = vectorizer.fit_transform(file_texts)
 
-    # new
     similarity_matrix = cosine_similarity(tfidf_matrix)
 
+    # ********************* Populate Part *********************
+
     
-    fig = px.imshow(similarity_matrix,
+    tab1, tab2 = st.tabs(["Heat Map presentation", "Line presentation"]) # ["Streamlit theme (default)", "Plotly native theme"]
+    with tab1:
+        # ***************** HeatMap *****************
+        fig = px.imshow(similarity_matrix,
                     title="Plagiarism Heatmap",
                     #labels=dict(x="Day of Week", y="Time of Day", color="Productivity"),
                     x=file_names,
@@ -79,11 +128,11 @@ def user_input():
                     aspect='auto',                     #  ('auto', 'equal', 'cube'),
 
                    )
-    tab1, tab2 = st.tabs(["Heat Map presentation", "Line presentation"]) # ["Streamlit theme (default)", "Plotly native theme"]
-    with tab1:
+        
         st.plotly_chart(fig, theme=None, selection_mode=('points', 'box', 'lasso'), use_container_width=True) # plotly_dark, streamlit
     
     with tab2:
+        # ***************** Line Chart *****************
         chart_data = pd.DataFrame(data=similarity_matrix, columns=file_names)
         st.line_chart(chart_data,y=file_names)
 
@@ -93,21 +142,23 @@ def main():
     st.set_page_config(page_title="Comparison Checker", page_icon=":bar_chart:", layout="wide")
     st.header("Plagiarism Cheker for Multiple Files")
 
+    global directory
     if st.button("Click here to show the result"):
-        if os.listdir("files_container"):
-            user_input()
+        if os.listdir(directory):
+            calculation_input_and_populate_output()
         else:
             st.write("Folder is Empty, First upload the Data...")
 
-
+    #   details about sidebar 
     with st.sidebar:
-
+        # show the modified navigation button
         button_position_1, button_position_2 = st.columns([.5, 1])
         with button_position_1:
             st.page_link("app.py",label="Home",  icon="🏠")
         with button_position_2:
             st.page_link("pages/compair_page.py", label="Comparison", icon="🔎")
 
+        # remove the default navigation bar
         st.markdown("""
         <style>
             
@@ -117,17 +168,20 @@ def main():
         </style>
         """, unsafe_allow_html=True)
 
+        # upload the multiple file
         st.title("Upload:")
         multiple_file = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", accept_multiple_files=True)
         
+        # processing 
         if st.button("Submit & Process"):
             with st.spinner("Processing..."):
                 save_multiple_files(multiple_file)
                 st.success("Done")
-        
-        if st.button("Delete Uploaded Data"):
-            if os.listdir("files_container"):
-                delete_folder("files_container", type="primary")
+
+        # button for clear the folder
+        if st.button("Delete Uploaded Data", type="primary"):
+            if os.listdir(directory):
+                delete_folder("files_container")
             else:
                 st.write("Folder is Empty")
             

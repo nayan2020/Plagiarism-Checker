@@ -4,6 +4,18 @@ import streamlit as st
 file_names = None
 file_contents = None
 
+# ********************************************************
+#   Function: upload_data
+# 
+#   Fetch the data from directory
+# 
+#   Input:
+#       None      
+#
+#   Output:
+#       None
+#
+# ********************************************************
 def upload_data():
     extracted_files = os.listdir("files_container")
     
@@ -19,7 +31,18 @@ def upload_data():
     global file_names
     file_names = list(file_contents.keys())
 
-
+# ********************************************************
+#   Function: compair_multiple_code
+# 
+#   Show the compair code side by side
+# 
+#   Input:
+#       None      
+#
+#   Output:
+#       None
+#
+# ********************************************************
 def compair_multiple_code():
     global file_name_1_pre
     global file_name_2_pre
@@ -71,8 +94,6 @@ def compair_multiple_code():
    
     st.markdown(css, unsafe_allow_html=True)
             
-
-
 
 
 def main():
