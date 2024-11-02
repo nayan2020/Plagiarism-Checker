@@ -177,10 +177,16 @@ def main():
             with st.spinner("Processing..."):
                 save_multiple_files(multiple_file)
                 st.success("Done")
+<<<<<<< HEAD
 
         # button for clear the folder
         if st.button("Delete Uploaded Data", type="primary"):
             if os.listdir(directory):
+=======
+        
+        if st.button("Delete Uploaded Data", type="primary"):
+            if os.listdir("files_container"):
+>>>>>>> 42fa35b714a6de350190de16b79b5a1efc475bda
                 delete_folder("files_container")
             else:
                 st.write("Folder is Empty")
